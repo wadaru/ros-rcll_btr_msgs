@@ -2,6 +2,7 @@
 import struct
 import time
 import sys
+import math
 import rospy
 import udpcomm
 from geometry_msgs.msg import Pose, PoseWithCovariance, Point, Quaternion
@@ -149,12 +150,13 @@ if __name__ == '__main__':
     quaternion = Quaternion()
     pose = Pose()
     header = Header()
+    theta = float(udp.view3Recv[4]) / 10
     point.x = float(udp.view3Recv[2]) / 10
     point.y = float(udp.view3Recv[3]) / 10
-    point.z = float(udp.view3Recv[4]) / 10
-    quaternion.x = 0
-    quaternion.y = 0
-    quaternion.z = 0
+    point.z = 0 # float(udp.view3Recv[4]) / 10
+    quaternion.x = math.cos(theta / 2.0) # 0
+    quaternion.y = math.sin(theta / 2.0) # 0
+    quaternion.z = math.sin(theta / 2.0) # 0
     quaternion.w = 0
     pose.position = point
     pose.orientation = quaternion
