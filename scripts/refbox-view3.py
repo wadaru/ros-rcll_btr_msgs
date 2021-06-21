@@ -21,7 +21,8 @@ from rcll_ros_msgs.msg import BeaconSignal, ExplorationInfo, \
                               LightSpec, MachineInfo, Machine, \
                               MachineReportEntry, MachineReportEntryBTR, \
                               MachineReportInfo, OrderInfo, Order, \
-                              ProductColor, RingInfo, Ring, Team, Time
+                              ProductColor, RingInfo, Ring, Team, Time, \
+                              NavigationRoutes, Route
 from rcll_ros_msgs.srv import SendBeaconSignal, SendMachineReport, \
                               SendMachineReportBTR, SendPrepareMachine
 #
@@ -140,6 +141,10 @@ def ringInfo(data):
     refboxRingInfo = data
     # print("RingInfo: ", data)
 
+def navigationRoutes(data):
+    global refboxNavigationRoutes
+    refboxNavigationRoutes = data
+    print("NavigaionRoutes: ", data)
 #
 # send information to RefBox
 #
@@ -282,6 +287,7 @@ if __name__ == '__main__':
   refboxRing = Ring()
   refboxTeam = Team()
   refboxTime = Time()
+  refboxNavigationRoutes = NavigationRoutes()
 
   rospy.init_node('robotino')
   rospy.Subscriber("rcll/beacon", BeaconSignal, beaconSignal)
@@ -291,6 +297,7 @@ if __name__ == '__main__':
   rospy.Subscriber("rcll/machine_report_info", MachineReportInfo, machineReportInfo)
   rospy.Subscriber("rcll/order_info", OrderInfo, orderInfo)
   rospy.Subscriber("rcll/ring_info", RingInfo, ringInfo)
+  rospy.Subscriber("rcll/routes_info", NavigationRoutes, navigationRoutes)
   
   rate = rospy.Rate(10)
 
@@ -328,6 +335,25 @@ if __name__ == '__main__':
         print(machineReport)
         sendMachineReport(machineReport)
 
+    # NavigationChallenge
+    if (udp.view3Recv[1] == 15):
+        if (len(refboxNavigationRoutes.route) > 0):
+            # print(refboxNavigationRoutes.route)
+            udp.view3Send[5] = \
+                (refboxNavigationRoutes.route[ 3].zone - 1000) * 100 * 100 * 100 \
+              + (refboxNavigationRoutes.route[ 2].zone - 1000) * 100 * 100 \
+              + (refboxNavigationRoutes.route[ 1].zone - 1000) * 100 \
+              + (refboxNavigationRoutes.route[ 0].zone - 1000)
+            udp.view3Send[6] = \
+                (refboxNavigationRoutes.route[ 7].zone - 1000) * 100 * 100 * 100 \
+              + (refboxNavigationRoutes.route[ 6].zone - 1000) * 100 * 100 \
+              + (refboxNavigationRoutes.route[ 5].zone - 1000) * 100 \
+              + (refboxNavigationRoutes.route[ 4].zone - 1000)
+            udp.view3Send[7] = \
+                (refboxNavigationRoutes.route[11].zone - 1000) * 100 * 100 * 100 \
+              + (refboxNavigationRoutes.route[10].zone - 1000) * 100 * 100 \
+              + (refboxNavigationRoutes.route[ 9].zone - 1000) * 100 \
+              + (refboxNavigationRoutes.route[ 8].zone - 1000)
     # Production Phase
     ## make C0
     ## which requires get base with cap from shelf at C-CS1, 
