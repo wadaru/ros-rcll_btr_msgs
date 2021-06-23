@@ -29,12 +29,25 @@ def getRightPoint(data):
     global rightPoint
     rightPoint = data
 
+def changeViewData(point):
+    x = int(point.x * 100)
+    y = int(point.y * 100)
+    viewData = math.abs(x) * 10000 + math.abs(y)
+    if ( point.x < 0):
+      viewData += 10000 * 10000
+    if ( point.y < 0):
+      viewData += 10000 * 10000 * 2
+    return viewData
+
 def updateUDP():
-    if (robVIewMode == 2):
+    if (robViewMode == 2):
       if (RPLIDAR == True):
-        udp.view3Send[5] = 
-        udp.view3Send[6] =
-        udp.view3Send[7] =
+        point = Point()
+        point.x = centerPoint.x * 1000
+        point.y = center
+        udp.view3Send[5] = changeViewData(centerPoint)
+        udp.view3Send[6] = changeViewData(leftPoint)
+        udp.view3Send[7] = changeViewData(rightPoint)
 
 def getResponse(value):
     if (value == 0):
@@ -49,11 +62,12 @@ def getResponse(value):
             udp.receiver()
             udp.sender()
             rate.sleep()
-    print(udp.view3Recv[1])
+    # print(value, udp.view3Recv[1])
     return
 
 def sendRobView():
-    rovViewMode = udp.view3Send[1]
+    global robViewMode
+    robViewMode = udp.view3Send[1]
     
     # set mode = 0 and wait for ack(!=0) from RobView.
     udp.view3Send[1] = 0
@@ -61,12 +75,14 @@ def sendRobView():
 
     # send command with mode
     udp.view3Send[1] = robViewMode
+    getResponse(0)
     getResponse(1)
 
     # command finished
     udp.view3Send[1] = 0
     getResponse(0)
 
+    robViewMode = 0
     return udp.view3Recv[1]
 
 def setVelocity(data):
@@ -82,11 +98,11 @@ def setVelocity(data):
 
     print("header:", data.header)
     print("velocity data:", data.pose.x, data.pose.y, data.pose.theta)
-    resp.ok = (sendRobView() == 1)
+    resp.success = (sendRobView() == 1)
     # return resp
-    return [resp.ok, ""]
+    return [resp.success, ""]
 
-def setPosition(data):
+def goPosition(data):
     global positionDriver, robViewMode
     resp = SetPosition()
     positionDriver = data
@@ -99,14 +115,14 @@ def setPosition(data):
     print("goToPosition:", positionDriver.pose)
     print(udp.view3Send[2])
 
-    resp.ok = (sendRobView() == 1)
+    resp.success = (sendRobView() == 1)
     # stop for RPLidar
     if (RPLIDAR == True):
         rospy.wait_for_service('/btr/scan_stop')
         scan_stop = rospy.ServiceProxy('/btr/scan_stop', Empty)
         resp = scan_stop()
 
-    return [resp.ok, ""]
+    return [resp.success, ""]
     # print("setPosition:", positionDriver.position.x)
 
 def setOdometry(data):
@@ -115,12 +131,15 @@ def setOdometry(data):
     odometryData = data
     robViewMode = 3
     udp.view3Send[1] = robViewMode # mode number
-    udp.view3Send[2] = int(odometryData.position.x)
-    udp.view3Send[3] = int(odometryData.position.y)
-    udp.view3Send[4] = int(odometryData.orientation.z)
+    udp.view3Send[2] = int(odometryData.pose.x)
+    udp.view3Send[3] = int(odometryData.pose.y)
+    udp.view3Send[4] = int(odometryData.pose.theta)
 
-    resp.ok = (sendRobView() == 1)
-    return [resp.ok, ""]
+    print("setOdometry:", odometryData.pose.x, odometryData.pose.y, odometryData.pose.theta)
+
+    resp.success = (sendRobView() == 1)
+    # print("OK")
+    return [resp.success, ""]
 
 #
 # main
@@ -144,7 +163,7 @@ if __name__ == '__main__':
 
   rospy.init_node('robotino')
   srv01 = rospy.Service('rvw2/setVelocity', SetVelocity, setVelocity)
-  srv02 = rospy.Service('rvw2/positionDriver', SetPosition, setPosition)
+  srv02 = rospy.Service('rvw2/positionDriver', SetPosition, goPosition)
   srv03 = rospy.Service('rvw2/setOdometry', SetOdometry, setOdometry)
   # pub01 = rospy.Publisher('odometry', Float32MultiArray, queue_size = 10)
   pub01 = rospy.Publisher('robotino/odometry', Odometry, queue_size = 10)
@@ -220,7 +239,7 @@ if __name__ == '__main__':
     pub03.publish(velocity)
 
     if (robViewMode != oldMode):
-      print("mode change from ", oldMode, " to ", robViewMode)
+      # print("mode change from ", oldMode, " to ", robViewMode)
       oldMode = robViewMode
 
     udp.sender()
