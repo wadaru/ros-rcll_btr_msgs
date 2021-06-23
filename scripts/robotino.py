@@ -30,9 +30,11 @@ def getRightPoint(data):
     rightPoint = data
 
 def changeViewData(point):
-    x = int(point.x * 100)
-    y = int(point.y * 100)
-    viewData = math.abs(x) * 10000 + math.abs(y)
+    fx = point.x * 100
+    fy = point.y * 100
+    x = int(fx)
+    y = int(fy)
+    viewData = abs(x) * 10000 + abs(y)
     if ( point.x < 0):
       viewData += 10000 * 10000
     if ( point.y < 0):
@@ -43,8 +45,8 @@ def updateUDP():
     if (robViewMode == 2):
       if (RPLIDAR == True):
         point = Point()
-        point.x = centerPoint.x * 1000
-        point.y = center
+        point.x = centerPoint.x
+        point.y = centerPoint.y
         udp.view3Send[5] = changeViewData(centerPoint)
         udp.view3Send[6] = changeViewData(leftPoint)
         udp.view3Send[7] = changeViewData(rightPoint)
@@ -102,7 +104,7 @@ def setVelocity(data):
     # return resp
     return [resp.success, ""]
 
-def goPosition(data):
+def goToPosition(data):
     global positionDriver, robViewMode
     resp = SetPosition()
     positionDriver = data
@@ -112,7 +114,7 @@ def goPosition(data):
     udp.view3Send[3] = int(positionDriver.pose.y)
     udp.view3Send[4] = int(positionDriver.pose.theta)
 
-    print("goToPosition:", positionDriver.pose)
+    print("goToPosition:", positionDriver.pose.x, positionDriver.pose.y, positionDriver.pose.theta)
     print(udp.view3Send[2])
 
     resp.success = (sendRobView() == 1)
@@ -120,7 +122,7 @@ def goPosition(data):
     if (RPLIDAR == True):
         rospy.wait_for_service('/btr/scan_stop')
         scan_stop = rospy.ServiceProxy('/btr/scan_stop', Empty)
-        resp = scan_stop()
+        respi1 = scan_stop()
 
     return [resp.success, ""]
     # print("setPosition:", positionDriver.position.x)
@@ -138,7 +140,7 @@ def setOdometry(data):
     print("setOdometry:", odometryData.pose.x, odometryData.pose.y, odometryData.pose.theta)
 
     resp.success = (sendRobView() == 1)
-    # print("OK")
+    print("OK")
     return [resp.success, ""]
 
 #
@@ -163,7 +165,7 @@ if __name__ == '__main__':
 
   rospy.init_node('robotino')
   srv01 = rospy.Service('rvw2/setVelocity', SetVelocity, setVelocity)
-  srv02 = rospy.Service('rvw2/positionDriver', SetPosition, goPosition)
+  srv02 = rospy.Service('rvw2/positionDriver', SetPosition, goToPosition)
   srv03 = rospy.Service('rvw2/setOdometry', SetOdometry, setOdometry)
   # pub01 = rospy.Publisher('odometry', Float32MultiArray, queue_size = 10)
   pub01 = rospy.Publisher('robotino/odometry', Odometry, queue_size = 10)
