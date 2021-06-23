@@ -30,13 +30,14 @@ def getRightPoint(data):
     rightPoint = data
 
 def changeViewData(point):
-    x = int(point.x * 100)
-    y = int(point.y * 100)
-    viewData = math.abs(x) * 10000 + math.abs(y)
+    x = int(point.x * 100 / 2)
+    y = int(point.y * 100 / 2)
+    # max: 20m = 1000
+    viewData = math.abs(x) * 1000 + math.abs(y)
     if ( point.x < 0):
-      viewData += 10000 * 10000
+      viewData += 1000 * 1000
     if ( point.y < 0):
-      viewData += 10000 * 10000 * 2
+      viewData += 1000 * 1000 * 2
     return viewData
 
 def updateUDP():
