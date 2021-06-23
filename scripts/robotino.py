@@ -32,6 +32,7 @@ def getRightPoint(data):
 def changeViewData(point):
     fx = point.x * 100 / 2
     fy = point.y * 100 / 2
+    # print(fx, fy)
     x = int(fx)
     y = int(fy)
     # max: 20m = 1000
@@ -78,7 +79,6 @@ def sendRobView():
 
     # send command with mode
     udp.view3Send[1] = robViewMode
-    getResponse(0)
     getResponse(1)
 
     # command finished
