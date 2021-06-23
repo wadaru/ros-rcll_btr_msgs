@@ -8,22 +8,44 @@ import udpcomm
 from geometry_msgs.msg import Pose, PoseWithCovariance, Point, Quaternion
 from socket import socket, AF_INET, SOCK_DGRAM
 from std_msgs.msg import Float32, Float32MultiArray, Bool, Header
-from std_srvs.srv import SetBool, SetBoolResponse
+from std_srvs.srv import SetBool, SetBoolResponse, Empty
 from nav_msgs.msg import Odometry
 import rcll_ros_msgs
 from rcll_btr_msgs.srv import SetOdometry, SetPosition, SetVelocity
 #
 # ROS for robotino
 # 
+RPLIDAR = True
+
+def getCenterPoint(data):
+    global centerPoint
+    centerPoint = data
+
+def getLeftPoint(data):
+    global leftPoint
+    leftPoint = data
+
+def getRightPoint(data):
+    global rightPoint
+    rightPoint = data
+
+def updateUDP():
+    if (robVIewMode == 2):
+      if (RPLIDAR == True):
+        udp.view3Send[5] = 
+        udp.view3Send[6] =
+        udp.view3Send[7] =
 
 def getResponse(value):
     if (value == 0):
         while float(udp.view3Recv[1]) == value:
+            updateUDP()
             udp.receiver()
             udp.sender()
             rate.sleep()
     else:
         while float(udp.view3Recv[1]) != 0:
+            updateUDP()
             udp.receiver()
             udp.sender()
             rate.sleep()
@@ -76,7 +98,14 @@ def setPosition(data):
 
     print("goToPosition:", positionDriver.pose)
     print(udp.view3Send[2])
+
     resp.ok = (sendRobView() == 1)
+    # stop for RPLidar
+    if (RPLIDAR == True):
+        rospy.wait_for_service('/btr/scan_stop')
+        scan_stop = rospy.ServiceProxy('/btr/scan_stop', Empty)
+        resp = scan_stop()
+
     return [resp.ok, ""]
     # print("setPosition:", positionDriver.position.x)
 
@@ -133,6 +162,19 @@ if __name__ == '__main__':
   robViewMode = 0
   oldMode = 0
   checkFlag = 0
+
+  centerPoint = Point()
+  leftPoint = Point()
+  rightPoint = Point()
+
+  # setup for RPLidar
+  if (RPLIDAR == True):
+    rospy.wait_for_service('/btr/scan_start')
+    scan_start = rospy.ServiceProxy('/btr/scan_start', Empty)
+    resp = scan_start()
+    rospy.Subscriber("/btr/centerPoint", Point, getCenterPoint)
+    rospy.Subscriber("/btr/leftPoint", Point, getLeftPoint)
+    rospy.Subscriber("/btr/rightPoint", Point, getRightPoint)
 
   udp.view3Send[1] = robViewMode
   udp.sender()
