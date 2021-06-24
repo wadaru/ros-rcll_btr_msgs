@@ -8,7 +8,7 @@ import udpcomm
 from geometry_msgs.msg import Pose, PoseWithCovariance, Point, Quaternion
 from socket import socket, AF_INET, SOCK_DGRAM
 from std_msgs.msg import Float32, Float32MultiArray, Bool, Header
-from std_srvs.srv import SetBool, SetBoolResponse, Empty
+from std_srvs.srv import SetBool, SetBoolResponse, Empty, EmptyResponse
 from nav_msgs.msg import Odometry
 import rcll_ros_msgs
 from rcll_btr_msgs.srv import SetOdometry, SetPosition, SetVelocity
@@ -16,6 +16,20 @@ from rcll_btr_msgs.srv import SetOdometry, SetPosition, SetVelocity
 # ROS for robotino
 # 
 RPLIDAR = True
+
+def startRpLidar():
+  # setup for RPLidar
+  if (RPLIDAR == True):
+    rospy.wait_for_service('/btr/scan_start')
+    scan_start = rospy.ServiceProxy('/btr/scan_start', Empty)
+    resp = scan_start()
+
+def stopRpLidar():
+  # setup for RPLidar
+  if (RPLIDAR == True):
+    rospy.wait_for_service('/btr/scan_stop')
+    scan_stop = rospy.ServiceProxy('/btr/scan_stop', Empty)
+    resp = scan_stop()
 
 def getCenterPoint(data):
     global centerPoint
@@ -54,6 +68,7 @@ def updateUDP():
         udp.view3Send[7] = changeViewData(rightPoint)
 
 def getResponse(value):
+    # print("getResponse: ", value)
     if (value == 0):
         while float(udp.view3Recv[1]) == value:
             updateUDP()
@@ -115,16 +130,14 @@ def goToPosition(data):
     udp.view3Send[3] = int(positionDriver.pose.y)
     udp.view3Send[4] = int(positionDriver.pose.theta)
 
+    startRpLidar()
     print("goToPosition:", positionDriver.pose.x, positionDriver.pose.y, positionDriver.pose.theta)
     print(udp.view3Send[2])
 
     resp.success = (sendRobView() == 1)
     # stop for RPLidar
     if (RPLIDAR == True):
-        rospy.wait_for_service('/btr/scan_stop')
-        scan_stop = rospy.ServiceProxy('/btr/scan_stop', Empty)
-        respi1 = scan_stop()
-
+        stopRpLidar()
     return [resp.success, ""]
     # print("setPosition:", positionDriver.position.x)
 
@@ -144,6 +157,12 @@ def setOdometry(data):
     print("OK")
     return [resp.success, ""]
 
+def goToMPSCenter(data):
+    robViewMode = 10
+    udp.view3Send[1] = robViewMode # mode number
+    print("goToMPSCenter")
+    sendRobView()
+    return EmptyResponse()
 #
 # main
 #
@@ -168,6 +187,7 @@ if __name__ == '__main__':
   srv01 = rospy.Service('rvw2/setVelocity', SetVelocity, setVelocity)
   srv02 = rospy.Service('rvw2/positionDriver', SetPosition, goToPosition)
   srv03 = rospy.Service('rvw2/setOdometry', SetOdometry, setOdometry)
+  srv04 = rospy.Service('rvw2/goToMPSCenter', Empty, goToMPSCenter)
   # pub01 = rospy.Publisher('odometry', Float32MultiArray, queue_size = 10)
   pub01 = rospy.Publisher('robotino/odometry', Odometry, queue_size = 10)
   pub02 = rospy.Publisher('robotino/checkFlag', Bool, queue_size = 10)
@@ -191,9 +211,7 @@ if __name__ == '__main__':
 
   # setup for RPLidar
   if (RPLIDAR == True):
-    rospy.wait_for_service('/btr/scan_start')
-    scan_start = rospy.ServiceProxy('/btr/scan_start', Empty)
-    resp = scan_start()
+    startRpLidar()
     rospy.Subscriber("/btr/centerPoint", Point, getCenterPoint)
     rospy.Subscriber("/btr/leftPoint", Point, getLeftPoint)
     rospy.Subscriber("/btr/rightPoint", Point, getRightPoint)
