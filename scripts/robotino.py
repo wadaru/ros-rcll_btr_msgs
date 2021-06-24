@@ -157,7 +157,29 @@ def setOdometry(data):
     print("OK")
     return [resp.success, ""]
 
+def moveRobotino(data):
+    global positionDriver, robViewMode
+    resp = SetPosition()
+    positionDriver = data
+    robViewMode = 4
+    udp.view3Send[1] = robViewMode # mode number
+    udp.view3Send[2] = int(positionDriver.pose.x)
+    udp.view3Send[3] = int(positionDriver.pose.y)
+    udp.view3Send[4] = int(positionDriver.pose.theta)
+
+    startRpLidar()
+    print("moveToPosition:", positionDriver.pose.x, positionDriver.pose.y, positionDriver.pose.theta)
+    print(udp.view3Send[2])
+
+    resp.success = (sendRobView() == 1)
+    # stop for RPLidar
+    if (RPLIDAR == True):
+        stopRpLidar()
+    return [resp.success, ""]
+    # print("setPosition:", positionDriver.position.x)
+
 def goToMPSCenter(data):
+    global robViewMode
     robViewMode = 10
     udp.view3Send[1] = robViewMode # mode number
     print("goToMPS Center")
@@ -188,7 +210,8 @@ if __name__ == '__main__':
   srv01 = rospy.Service('rvw2/setVelocity', SetVelocity, setVelocity)
   srv02 = rospy.Service('rvw2/positionDriver', SetPosition, goToPosition)
   srv03 = rospy.Service('rvw2/setOdometry', SetOdometry, setOdometry)
-  srv04 = rospy.Service('rvw2/goToMPSCenter', Empty, goToMPSCenter)
+  srv04 = rospy.Service('rvw2/move', SetPosition, moveRobotino)
+  srv10 = rospy.Service('rvw2/goToMPSCenter', Empty, goToMPSCenter)
   # pub01 = rospy.Publisher('odometry', Float32MultiArray, queue_size = 10)
   pub01 = rospy.Publisher('robotino/odometry', Odometry, queue_size = 10)
   pub02 = rospy.Publisher('robotino/checkFlag', Bool, queue_size = 10)
