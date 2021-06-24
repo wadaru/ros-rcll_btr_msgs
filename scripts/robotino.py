@@ -58,7 +58,7 @@ def changeViewData(point):
     return viewData
 
 def updateUDP():
-    if (robViewMode == 2):
+    if (robViewMode == 2 or robViewMode == 10):
       if (RPLIDAR == True):
         point = Point()
         point.x = centerPoint.x
@@ -160,7 +160,8 @@ def setOdometry(data):
 def goToMPSCenter(data):
     robViewMode = 10
     udp.view3Send[1] = robViewMode # mode number
-    print("goToMPSCenter")
+    print("goToMPS Center")
+    startRpLidar()
     sendRobView()
     return EmptyResponse()
 #
