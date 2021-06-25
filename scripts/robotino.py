@@ -51,8 +51,14 @@ def changeViewData(point):
     fx = point.x * 100 / 2
     fy = point.y * 100 / 2
     # print(fx, fy)
-    x = int(fx)
-    y = int(fy)
+    if (math.isinf(fx) or math.isnan(fx)):
+        x = 0
+    else:
+         x = int(fx)
+    if (math.isinf(fy) or math.isnan(fy)):
+        y = 0
+    else:
+        y = int(fy)
     # max: 20m = 1000
     viewData = abs(x) * 1000 + abs(y)
     if ( point.x < 0):
@@ -67,7 +73,7 @@ def updateUDP():
         point = Point()
         point.x = centerPoint.x
         point.y = centerPoint.y
-        if (robVIewMode == 10):
+        if (robViewMode == 10):
             udp.view3Send[4] = changeViewData(centerPoint)
         udp.view3Send[5] = changeViewData(closePoint)
         udp.view3Send[6] = changeViewData(leftPoint)
