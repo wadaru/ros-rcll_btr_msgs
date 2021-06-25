@@ -11,7 +11,7 @@ from std_msgs.msg import Float32, Float32MultiArray, Bool, Header
 from std_srvs.srv import SetBool, SetBoolResponse, Empty, EmptyResponse
 from nav_msgs.msg import Odometry
 import rcll_ros_msgs
-from rcll_btr_msgs.srv import SetOdometry, SetPosition, SetVelocity
+from rcll_btr_msgs.srv import SetOdometry, SetPosition, SetVelocity, SetDistance
 #
 # ROS for robotino
 # 
@@ -190,12 +190,16 @@ def moveRobotino(data):
 
 def goToMPSCenter(data):
     global robViewMode
+    print(data.distance)
+    resp = SetDistance()
     robViewMode = 10
     udp.view3Send[1] = robViewMode # mode number
+    udp.view3Send[2] = data.distance.data # distance from right edge Inputsize = 350, OutputSde =310
     print("goToMPS Center")
     startRpLidar()
-    sendRobView()
-    return EmptyResponse()
+    resp.ok = (sendRobView() == 1)
+    print(resp.ok)
+    return [resp.ok, ""]
 
 def turnClockwise(data):
     global robViewMode
@@ -238,7 +242,7 @@ if __name__ == '__main__':
   srv02 = rospy.Service('rvw2/positionDriver', SetPosition, goToPosition)
   srv03 = rospy.Service('rvw2/setOdometry', SetOdometry, setOdometry)
   srv04 = rospy.Service('rvw2/move', SetPosition, moveRobotino)
-  srv10 = rospy.Service('rvw2/goToMPSCenter', Empty, goToMPSCenter)
+  srv10 = rospy.Service('rvw2/goToMPSCenter', SetDistance, goToMPSCenter)
   srv11 = rospy.Service('rvw2/turnClockwiseMPS', Empty, turnClockwise)
   srv12 = rospy.Service('rvw2/turnCOunterClockwiseMPS', Empty, turnCounterClockwise)
   # pub01 = rospy.Publisher('odometry', Float32MultiArray, queue_size = 10)
