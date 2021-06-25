@@ -31,6 +31,10 @@ def stopRpLidar():
     scan_stop = rospy.ServiceProxy('/btr/scan_stop', Empty)
     resp = scan_stop()
 
+def getClosePoint(data):
+    global closePoint
+    closePoint = data
+
 def getCenterPoint(data):
     global centerPoint
     centerPoint = data
@@ -63,7 +67,9 @@ def updateUDP():
         point = Point()
         point.x = centerPoint.x
         point.y = centerPoint.y
-        udp.view3Send[5] = changeViewData(centerPoint)
+        if (robVIewMode == 10):
+            udp.view3Send[4] = changeViewData(centerPoint)
+        udp.view3Send[5] = changeViewData(closePoint)
         udp.view3Send[6] = changeViewData(leftPoint)
         udp.view3Send[7] = changeViewData(rightPoint)
 
@@ -247,12 +253,14 @@ if __name__ == '__main__':
   checkFlag = 0
 
   centerPoint = Point()
+  closePoint = Point()
   leftPoint = Point()
   rightPoint = Point()
 
   # setup for RPLidar
   if (RPLIDAR == True):
     startRpLidar()
+    rospy.Subscriber("/btr/closePoint", Point, getClosePoint)
     rospy.Subscriber("/btr/centerPoint", Point, getCenterPoint)
     rospy.Subscriber("/btr/leftPoint", Point, getLeftPoint)
     rospy.Subscriber("/btr/rightPoint", Point, getRightPoint)
