@@ -212,6 +212,7 @@ def turnClockwise(data):
 
 def turnCounterClockwise(data):
     global robViewMode
+    robViewMode = 12
     udp.view3Send[1] = robViewMode # mode number
     print("turnCounterClockwise")
     startRpLidar()
