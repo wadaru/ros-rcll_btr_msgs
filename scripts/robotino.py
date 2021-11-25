@@ -244,7 +244,7 @@ if __name__ == '__main__':
   srv04 = rospy.Service('rvw2/move', SetPosition, moveRobotino)
   srv10 = rospy.Service('rvw2/goToMPSCenter', SetDistance, goToMPSCenter)
   srv11 = rospy.Service('rvw2/turnClockwiseMPS', Empty, turnClockwise)
-  srv12 = rospy.Service('rvw2/turnCOunterClockwiseMPS', Empty, turnCounterClockwise)
+  srv12 = rospy.Service('rvw2/turnCounterClockwiseMPS', Empty, turnCounterClockwise)
   # pub01 = rospy.Publisher('odometry', Float32MultiArray, queue_size = 10)
   pub01 = rospy.Publisher('robotino/odometry', Odometry, queue_size = 10)
   pub02 = rospy.Publisher('robotino/checkFlag', Bool, queue_size = 10)
