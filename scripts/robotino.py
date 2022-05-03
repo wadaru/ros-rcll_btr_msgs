@@ -126,9 +126,10 @@ def setVelocity(data):
     udp.view3Send[3] = int(velocityData.pose.y)
     udp.view3Send[4] = int(velocityData.pose.theta)
 
-    print("header:", data.header)
+    # print("header:", data.header)
     print("velocity data:", data.pose.x, data.pose.y, data.pose.theta)
     resp.success = (sendRobView() == 1)
+    print(resp.success)
     # return resp
     return [resp.success, ""]
 
