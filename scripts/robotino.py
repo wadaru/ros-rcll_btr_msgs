@@ -80,7 +80,7 @@ def updateUDP():
         udp.view3Send[7] = changeViewData(rightPoint)
 
 def getResponse(value):
-    # print("getResponse: ", value)
+    print("getResponse: ", value)
     if (value == 0):
         while float(udp.view3Recv[1]) == value:
             updateUDP()
@@ -94,6 +94,7 @@ def getResponse(value):
             udp.sender()
             rate.sleep()
     # print(value, udp.view3Recv[1])
+    print("getResponse: OK")
     return
 
 def sendRobView():
