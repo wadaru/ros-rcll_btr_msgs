@@ -118,7 +118,7 @@ def sendRobView():
 
 def setVelocity(data):
     global velocityData, robViewMode
-    print "setVelocity"
+    print("setVelocity")
     resp = SetVelocity()
     velocityData = data
     robViewMode = 1
