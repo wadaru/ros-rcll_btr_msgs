@@ -16,7 +16,7 @@ from std_srvs.srv import Empty, EmptyResponse
 
 #
 def scanDistance(deg):
-  return scanData.ranges[len(scanData.ranges) / 360 * ((deg + 360) % 360)]
+  return scanData.ranges[int(len(scanData.ranges) / 360 * ((deg + 360) % 360))]
 
 #
 def polarToPoint(distance, angle):
