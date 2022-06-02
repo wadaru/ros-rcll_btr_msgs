@@ -40,14 +40,15 @@ class Udpcomm():
     self.data =[00, 36, 00, 00];
 
     for i in range(4, 9 * 4, 4):
-      self.view3Info[i - 4] = self.view3Send[(i - 4) / 4]
+      # print(type(i), i)
+      self.view3Info[i - 4] = self.view3Send[int((i - 4) / 4)]
       if (self.view3Info[i - 4] < 0):
-        self.view3Info[i - 4] = ((-self.view3Send[(i - 4) / 4]) ^ 0xffffffff) + 1
+        self.view3Info[i - 4] = ((-self.view3Send[int((i - 4) / 4)]) ^ 0xffffffff) + 1
       # if (self.view3Send[i - 4] > 255):
-      self.view3Info[i - 1] = (self.view3Send[(i - 4) / 4] & 0xff000000) >> 24
-      self.view3Info[i - 2] = (self.view3Send[(i - 4) / 4] & 0x00ff0000) >> 16
-      self.view3Info[i - 3] = (self.view3Send[(i - 4) / 4] & 0x0000ff00) >>  8
-      self.view3Info[i - 4] = (self.view3Send[(i - 4) / 4] & 0x000000ff) 
+      self.view3Info[i - 1] = (self.view3Send[int((i - 4) / 4)] & 0xff000000) >> 24
+      self.view3Info[i - 2] = (self.view3Send[int((i - 4) / 4)] & 0x00ff0000) >> 16
+      self.view3Info[i - 3] = (self.view3Send[int((i - 4) / 4)] & 0x0000ff00) >>  8
+      self.view3Info[i - 4] = (self.view3Send[int((i - 4) / 4)] & 0x000000ff) 
 
     # print(self.view3Info[11], self.view3Info[10], self.view3Info[9], self.view3Info[8])
     for i in range(4, 9 * 4):
@@ -87,12 +88,11 @@ class Udpcomm():
   def receiver(self):
     s = struct.Struct("!B")
     data, addr = self.recv.recvfrom(self.BUFSIZE)
-
     for i in range(8):
-      self.view3Recv[i] = ((int(data[i * 4 + 4 + 0].encode('hex'), 16)      )
-                         + (int(data[i * 4 + 4 + 1].encode('hex'), 16) <<  8)
-                         + (int(data[i * 4 + 4 + 2].encode('hex'), 16) << 16)
-                         + (int(data[i * 4 + 4 + 3].encode('hex'), 16) << 24))
+      self.view3Recv[i] = ((int(data[i * 4 + 4 + 0])      )
+                        + (int(data[i * 4 + 4 + 1]) <<  8)
+                        + (int(data[i * 4 + 4 + 2]) << 16)
+                        + (int(data[i * 4 + 4 + 3]) << 24))
       if (self.view3Recv[i] >= (1 << 31)):
         self.view3Recv[i]  -= (1 <<32)
       # print (self.view3Recv[i])
