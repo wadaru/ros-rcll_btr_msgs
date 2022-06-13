@@ -1,0 +1,8 @@
+---
+std_msgs/Int16 tag_id
+rcll_btr_msgs/Corners UpLeft
+rcll_btr_msgs/Corners UpRight
+rcll_btr_msgs/Corners BottomRight
+rcll_btr_msgs/Corners BottomLeft
+bool ok
+string error_msg
