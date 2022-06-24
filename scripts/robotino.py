@@ -68,31 +68,38 @@ def changeViewData(point):
     return viewData
 
 def updateUDP():
+    global centerPoint, closePoint, leftPoint, rightPoint
     if (robViewMode == 2 or robViewMode == 10):
       if (RPLIDAR == True):
-        point = Point()
-        point.x = centerPoint.x
-        point.y = centerPoint.y
+        # point = Point()
+        # point.x = centerPoint.x
+        # point.y = centerPoint.y
         if (robViewMode == 10):
             udp.view3Send[4] = changeViewData(centerPoint)
         udp.view3Send[5] = changeViewData(closePoint)
         udp.view3Send[6] = changeViewData(leftPoint)
         udp.view3Send[7] = changeViewData(rightPoint)
 
+def packetProcess():
+    updateUDP()
+    udp.receiver()
+    udp.sender()
+    # rate.sleep()
+    print("counter:", udp.view3Recv[0])
+
 def getResponse(value):
     print("getResponse: ", value)
+    packetCounter = udp.view3Recv[0]
+    print("counter:", packetCounter)
+    # while packetCounter == udp.view3Recv[0]:
+    #     packetProcess()
+
     if (value == 0):
         while float(udp.view3Recv[1]) == value:
-            updateUDP()
-            udp.receiver()
-            udp.sender()
-            rate.sleep()
+            packetProcess()
     else:
         while float(udp.view3Recv[1]) != 0:
-            updateUDP()
-            udp.receiver()
-            udp.sender()
-            rate.sleep()
+            packetProcess()
     # print(value, udp.view3Recv[1])
     print("getResponse: OK")
     return
